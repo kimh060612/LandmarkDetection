@@ -26,8 +26,8 @@ if __name__ == "__main__":
 
     fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, device='cuda', flip_input=True)
 
-    VideoPath = "./test/MyHeroTest.mp4"
-    OutVideo = "./test/MyHeroResult.mp4"
+    VideoPath = "./test/MyHeroTest.avi"
+    OutVideo = "./test/MyHeroResult.avi"
     Vid = cv2.VideoCapture(VideoPath)
 
     frame_width = Vid.get(cv2.CAP_PROP_FRAME_WIDTH)
@@ -40,11 +40,20 @@ if __name__ == "__main__":
     while True:
         ret, frame = Vid.read()
         if ret:
-            preds = fa.get_landmarks(ret)[-1]
+            try:
+                preds = fa.get_landmarks(frame)[-1]
 
-            for pred_type in pred_types.values():
-                
-                
-
-                pass
+                for pred_type in pred_types.values():
+                    
+                    frame = cv2.line(frame, (preds[pred_type.slice, 0],preds[pred_type.slice, 1]), (preds[pred_type.slice, 0],preds[pred_type.slice, 1]) , (0, 0, 255), 5)
+            except :
+                pass    
+            out.write(frame)
+            cv2.imshow('video', frame)
         
+        else :
+            break
+
+Vid.release()
+out.release()
+cv2.destroyAllWindows()
