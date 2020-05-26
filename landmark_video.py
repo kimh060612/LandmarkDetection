@@ -22,6 +22,8 @@ plot_style = dict(marker='o',
                   linestyle='-',
                   lw=2)
 
+check = [0 for _ in range(68)]
+
 if __name__ == "__main__":
 
     fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, device='cuda', flip_input=True)
@@ -32,27 +34,28 @@ if __name__ == "__main__":
 
     frame_width = Vid.get(cv2.CAP_PROP_FRAME_WIDTH)
     frame_height = Vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    print(frame_width, frame_height, end=',')
+    print(frame_width, frame_height)
 
     fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-    out = cv2.VideoWriter(OutVideo, fourcc, 25.0, (320,240))
+    out = cv2.VideoWriter(OutVideo, fourcc, 25.0, (640,360))
 
-    while True:
+    while Vid.isOpened():
         ret, frame = Vid.read()
-        if ret:
-            try:
-                preds = fa.get_landmarks(frame)[-1]
+        try:
+            Pri_index = 0
+            preds = fa.get_landmarks(io.imread(frame))[-1]
+            for pred_type in pred_types.values():
+                Det = len(check[pred_type.slice])
+                for i in range(Det):
+                    frame = cv2.line(frame, (preds[Pri_index + i, 0],preds[Pri_index + i, 1]), (preds[Pri_index + i, 0],preds[Pri_index + i, 1]) , (0, 0, 255), 5) 
+                Pri_index += (Det - 1)
+        except :
+            print("No Face detected")
 
-                for pred_type in pred_types.values():
-                    
-                    frame = cv2.line(frame, (preds[pred_type.slice, 0],preds[pred_type.slice, 1]), (preds[pred_type.slice, 0],preds[pred_type.slice, 1]) , (0, 0, 255), 5)
-            except :
-                pass    
-            out.write(frame)
-            cv2.imshow('video', frame)
-        
-        else :
-            break
+        out.write(frame)
+        cv2.imshow('video', frame)
+
+
 
 Vid.release()
 out.release()
